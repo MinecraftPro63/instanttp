@@ -2,6 +2,7 @@
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -14,6 +15,7 @@ screenGui.Parent = playerGui
 
 -- Variables
 local savedPosition = nil
+local teleportSpeed = 5 -- Default speed (1-10, higher = faster)
 
 -- Function to make frames draggable (only from header)
 local function makeDraggableFromHeader(frame, dragArea)
@@ -112,11 +114,11 @@ local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(0, 8)
 toggleCorner.Parent = toggleButton
 
--- Create Main Frame
+-- Create Main Frame (now taller for speed controls)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 300, 0, 350)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -175)
+mainFrame.Size = UDim2.new(0, 300, 0, 420)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -210)
 mainFrame.AnchorPoint = Vector2.new(0, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 mainFrame.BorderSizePixel = 0
@@ -146,7 +148,6 @@ local headerCorner = Instance.new("UICorner")
 headerCorner.CornerRadius = UDim.new(0, 12)
 headerCorner.Parent = header
 
--- Fix header corners
 local headerFix = Instance.new("Frame")
 headerFix.Size = UDim2.new(1, 0, 0, 12)
 headerFix.Position = UDim2.new(0, 0, 1, -12)
@@ -260,11 +261,103 @@ savedPosText.TextYAlignment = Enum.TextYAlignment.Top
 savedPosText.ZIndex = 7
 savedPosText.Parent = savedPosFrame
 
+-- Speed Control Frame
+local speedFrame = Instance.new("Frame")
+speedFrame.Size = UDim2.new(1, -20, 0, 60)
+speedFrame.Position = UDim2.new(0, 10, 0, 240)
+speedFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+speedFrame.BorderSizePixel = 0
+speedFrame.ZIndex = 6
+speedFrame.Parent = mainFrame
+
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0, 8)
+speedCorner.Parent = speedFrame
+
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(1, -10, 0, 20)
+speedLabel.Position = UDim2.new(0, 5, 0, 5)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "⚡ Speed: 5"
+speedLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+speedLabel.Font = Enum.Font.GothamBold
+speedLabel.TextSize = 14
+speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+speedLabel.ZIndex = 7
+speedLabel.Parent = speedFrame
+
+local speedSlider = Instance.new("Frame")
+speedSlider.Size = UDim2.new(1, -20, 0, 6)
+speedSlider.Position = UDim2.new(0, 10, 0, 35)
+speedSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+speedSlider.BorderSizePixel = 0
+speedSlider.ZIndex = 7
+speedSlider.Parent = speedFrame
+
+local sliderCorner = Instance.new("UICorner")
+sliderCorner.CornerRadius = UDim.new(1, 0)
+sliderCorner.Parent = speedSlider
+
+local speedFill = Instance.new("Frame")
+speedFill.Size = UDim2.new(0.5, 0, 1, 0)
+speedFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+speedFill.BorderSizePixel = 0
+speedFill.ZIndex = 8
+speedFill.Parent = speedSlider
+
+local fillCorner = Instance.new("UICorner")
+fillCorner.CornerRadius = UDim.new(1, 0)
+fillCorner.Parent = speedFill
+
+local speedKnob = Instance.new("TextButton")
+speedKnob.Size = UDim2.new(0, 20, 0, 20)
+speedKnob.Position = UDim2.new(0.5, -10, 0.5, -10)
+speedKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+speedKnob.Text = ""
+speedKnob.ZIndex = 9
+speedKnob.Parent = speedSlider
+
+local knobCorner = Instance.new("UICorner")
+knobCorner.CornerRadius = UDim.new(1, 0)
+knobCorner.Parent = speedKnob
+
+-- Speed slider functionality
+local draggingSlider = false
+speedKnob.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingSlider = true
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingSlider = false
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if draggingSlider then
+		local mousePos = UserInputService:GetMouseLocation()
+		local sliderPos = speedSlider.AbsolutePosition
+		local sliderSize = speedSlider.AbsoluteSize
+		
+		local relativeX = math.clamp(mousePos.X - sliderPos.X, 0, sliderSize.X)
+		local percentage = relativeX / sliderSize.X
+		
+		teleportSpeed = math.floor(percentage * 10) + 1 -- 1 to 11
+		if teleportSpeed > 10 then teleportSpeed = 10 end
+		
+		speedKnob.Position = UDim2.new(percentage, -10, 0.5, -10)
+		speedFill.Size = UDim2.new(percentage, 0, 1, 0)
+		speedLabel.Text = "⚡ Speed: " .. teleportSpeed
+	end
+end)
+
 -- Set Position Button
 local setButton = Instance.new("TextButton")
 setButton.Name = "SetButton"
 setButton.Size = UDim2.new(1, -20, 0, 45)
-setButton.Position = UDim2.new(0, 10, 0, 240)
+setButton.Position = UDim2.new(0, 10, 0, 310)
 setButton.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
 setButton.Text = "📍 Set Position"
 setButton.TextColor3 = Color3.new(1, 1, 1)
@@ -282,7 +375,7 @@ setCorner.Parent = setButton
 local teleportButton = Instance.new("TextButton")
 teleportButton.Name = "TeleportButton"
 teleportButton.Size = UDim2.new(1, -20, 0, 45)
-teleportButton.Position = UDim2.new(0, 10, 0, 295)
+teleportButton.Position = UDim2.new(0, 10, 0, 365)
 teleportButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
 teleportButton.Text = "⚡ Teleport"
 teleportButton.TextColor3 = Color3.new(1, 1, 1)
@@ -338,37 +431,43 @@ setButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Teleport functionality with fast smooth movement
+-- Teleport functionality with bypass method
 teleportButton.MouseButton1Click:Connect(function()
 	if savedPosition then
 		local character = player.Character
-		if character and character:FindFirstChild("HumanoidRootPart") then
+		if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") then
 			local hrp = character.HumanoidRootPart
+			local humanoid = character.Humanoid
 			
-			-- Fast smooth teleport (small rapid steps)
+			-- Calculate steps based on speed (1=slowest, 10=fastest)
+			local maxSteps = 20
+			local steps = math.max(2, maxSteps - (teleportSpeed * 2))
+			local delay = math.max(0.001, 0.03 - (teleportSpeed * 0.002))
+			
 			local startPos = hrp.Position
 			local endPos = savedPosition
-			local steps = 10 -- Number of steps (lower = faster, higher = smoother)
-			local delay = 0.01 -- Delay between steps (lower = faster)
 			
-			-- Disable collision for smooth movement
-			local originalCanCollide = hrp.CanCollide
-			hrp.CanCollide = false
+			-- Anti-detection methods
+			hrp.Anchored = true -- Prevent physics interference
 			
-			-- Move in steps
-			for i = 1, steps do
-				local alpha = i / steps
-				local newPos = startPos:Lerp(endPos, alpha)
-				hrp.CFrame = CFrame.new(newPos)
-				task.wait(delay)
-			end
+			-- Move in steps with RunService for smoother movement
+			local connection
+			local currentStep = 0
 			
-			-- Re-enable collision
-			hrp.CanCollide = originalCanCollide
-			
-			-- Reset velocity to prevent sliding
-			hrp.Velocity = Vector3.new(0, 0, 0)
-			hrp.RotVelocity = Vector3.new(0, 0, 0)
+			connection = RunService.Heartbeat:Connect(function()
+				currentStep = currentStep + 1
+				if currentStep >= steps then
+					connection:Disconnect()
+					hrp.CFrame = CFrame.new(endPos)
+					hrp.Anchored = false
+					hrp.Velocity = Vector3.new(0, 0, 0)
+					hrp.RotVelocity = Vector3.new(0, 0, 0)
+				else
+					local alpha = currentStep / steps
+					local newPos = startPos:Lerp(endPos, alpha)
+					hrp.CFrame = CFrame.new(newPos)
+				end
+			end)
 			
 			-- Visual feedback
 			teleportButton.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
@@ -385,6 +484,6 @@ teleportButton.MouseButton1Click:Connect(function()
 end)
 
 -- Update position every frame
-game:GetService("RunService").RenderStepped:Connect(updateCurrentPosition)
+RunService.RenderStepped:Connect(updateCurrentPosition)
 
 print("Teleport GUI Loaded Successfully!")
