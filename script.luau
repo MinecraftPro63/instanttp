@@ -15,8 +15,7 @@ screenGui.Parent = playerGui
 
 -- Variables
 local savedPosition = nil
-local teleportSpeed = 50 -- Default speed (1-100, higher = faster)
-local stepDistance = 2 -- Distance per step in studs (1-10)
+local stepDistance = 3 -- Distance per step in studs (1-20)
 local waitTime = 0.1 -- Wait time between steps (0.01-1.0)
 
 -- Function to make frames draggable (only from header)
@@ -116,11 +115,11 @@ local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(0, 8)
 toggleCorner.Parent = toggleButton
 
--- Create Main Frame (now taller for speed controls)
+-- Create Main Frame (now taller for controls)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 300, 0, 420)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -210)
+mainFrame.Size = UDim2.new(0, 300, 0, 520)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -260)
 mainFrame.AnchorPoint = Vector2.new(0, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
 mainFrame.BorderSizePixel = 0
@@ -263,95 +262,179 @@ savedPosText.TextYAlignment = Enum.TextYAlignment.Top
 savedPosText.ZIndex = 7
 savedPosText.Parent = savedPosFrame
 
--- Speed Control Frame
-local speedFrame = Instance.new("Frame")
-speedFrame.Size = UDim2.new(1, -20, 0, 60)
-speedFrame.Position = UDim2.new(0, 10, 0, 240)
-speedFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-speedFrame.BorderSizePixel = 0
-speedFrame.ZIndex = 6
-speedFrame.Parent = mainFrame
+-- Step Distance Control Frame
+local stepFrame = Instance.new("Frame")
+stepFrame.Size = UDim2.new(1, -20, 0, 60)
+stepFrame.Position = UDim2.new(0, 10, 0, 240)
+stepFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+stepFrame.BorderSizePixel = 0
+stepFrame.ZIndex = 6
+stepFrame.Parent = mainFrame
 
-local speedCorner = Instance.new("UICorner")
-speedCorner.CornerRadius = UDim.new(0, 8)
-speedCorner.Parent = speedFrame
+local stepCorner = Instance.new("UICorner")
+stepCorner.CornerRadius = UDim.new(0, 8)
+stepCorner.Parent = stepFrame
 
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(1, -10, 0, 20)
-speedLabel.Position = UDim2.new(0, 5, 0, 5)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "⚡ Speed: 50"
-speedLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
-speedLabel.Font = Enum.Font.GothamBold
-speedLabel.TextSize = 14
-speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-speedLabel.ZIndex = 7
-speedLabel.Parent = speedFrame
+local stepLabel = Instance.new("TextLabel")
+stepLabel.Size = UDim2.new(1, -10, 0, 20)
+stepLabel.Position = UDim2.new(0, 5, 0, 5)
+stepLabel.BackgroundTransparency = 1
+stepLabel.Text = "📏 Step Distance: 3 studs"
+stepLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+stepLabel.Font = Enum.Font.GothamBold
+stepLabel.TextSize = 14
+stepLabel.TextXAlignment = Enum.TextXAlignment.Left
+stepLabel.ZIndex = 7
+stepLabel.Parent = stepFrame
 
-local speedSlider = Instance.new("Frame")
-speedSlider.Size = UDim2.new(1, -20, 0, 6)
-speedSlider.Position = UDim2.new(0, 10, 0, 35)
-speedSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-speedSlider.BorderSizePixel = 0
-speedSlider.ZIndex = 7
-speedSlider.Parent = speedFrame
+local stepSlider = Instance.new("Frame")
+stepSlider.Size = UDim2.new(1, -20, 0, 6)
+stepSlider.Position = UDim2.new(0, 10, 0, 35)
+stepSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+stepSlider.BorderSizePixel = 0
+stepSlider.ZIndex = 7
+stepSlider.Parent = stepFrame
 
-local sliderCorner = Instance.new("UICorner")
-sliderCorner.CornerRadius = UDim.new(1, 0)
-sliderCorner.Parent = speedSlider
+local stepSliderCorner = Instance.new("UICorner")
+stepSliderCorner.CornerRadius = UDim.new(1, 0)
+stepSliderCorner.Parent = stepSlider
 
-local speedFill = Instance.new("Frame")
-speedFill.Size = UDim2.new(0.49, 0, 1, 0)
-speedFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
-speedFill.BorderSizePixel = 0
-speedFill.ZIndex = 8
-speedFill.Parent = speedSlider
+local stepFill = Instance.new("Frame")
+stepFill.Size = UDim2.new(0.1, 0, 1, 0)
+stepFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+stepFill.BorderSizePixel = 0
+stepFill.ZIndex = 8
+stepFill.Parent = stepSlider
 
-local fillCorner = Instance.new("UICorner")
-fillCorner.CornerRadius = UDim.new(1, 0)
-fillCorner.Parent = speedFill
+local stepFillCorner = Instance.new("UICorner")
+stepFillCorner.CornerRadius = UDim.new(1, 0)
+stepFillCorner.Parent = stepFill
 
-local speedKnob = Instance.new("TextButton")
-speedKnob.Size = UDim2.new(0, 20, 0, 20)
-speedKnob.Position = UDim2.new(0.49, -10, 0.5, -10)
-speedKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-speedKnob.Text = ""
-speedKnob.ZIndex = 9
-speedKnob.Parent = speedSlider
+local stepKnob = Instance.new("TextButton")
+stepKnob.Size = UDim2.new(0, 20, 0, 20)
+stepKnob.Position = UDim2.new(0.1, -10, 0.5, -10)
+stepKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+stepKnob.Text = ""
+stepKnob.ZIndex = 9
+stepKnob.Parent = stepSlider
 
-local knobCorner = Instance.new("UICorner")
-knobCorner.CornerRadius = UDim.new(1, 0)
-knobCorner.Parent = speedKnob
+local stepKnobCorner = Instance.new("UICorner")
+stepKnobCorner.CornerRadius = UDim.new(1, 0)
+stepKnobCorner.Parent = stepKnob
 
--- Speed slider functionality
-local draggingSlider = false
-speedKnob.InputBegan:Connect(function(input)
+-- Wait Time Control Frame
+local waitFrame = Instance.new("Frame")
+waitFrame.Size = UDim2.new(1, -20, 0, 60)
+waitFrame.Position = UDim2.new(0, 10, 0, 310)
+waitFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+waitFrame.BorderSizePixel = 0
+waitFrame.ZIndex = 6
+waitFrame.Parent = mainFrame
+
+local waitCorner = Instance.new("UICorner")
+waitCorner.CornerRadius = UDim.new(0, 8)
+waitCorner.Parent = waitFrame
+
+local waitLabel = Instance.new("TextLabel")
+waitLabel.Size = UDim2.new(1, -10, 0, 20)
+waitLabel.Position = UDim2.new(0, 5, 0, 5)
+waitLabel.BackgroundTransparency = 1
+waitLabel.Text = "⏱️ Wait Time: 0.10s"
+waitLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+waitLabel.Font = Enum.Font.GothamBold
+waitLabel.TextSize = 14
+waitLabel.TextXAlignment = Enum.TextXAlignment.Left
+waitLabel.ZIndex = 7
+waitLabel.Parent = waitFrame
+
+local waitSlider = Instance.new("Frame")
+waitSlider.Size = UDim2.new(1, -20, 0, 6)
+waitSlider.Position = UDim2.new(0, 10, 0, 35)
+waitSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+waitSlider.BorderSizePixel = 0
+waitSlider.ZIndex = 7
+waitSlider.Parent = waitFrame
+
+local waitSliderCorner = Instance.new("UICorner")
+waitSliderCorner.CornerRadius = UDim.new(1, 0)
+waitSliderCorner.Parent = waitSlider
+
+local waitFill = Instance.new("Frame")
+waitFill.Size = UDim2.new(0.09, 0, 1, 0)
+waitFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+waitFill.BorderSizePixel = 0
+waitFill.ZIndex = 8
+waitFill.Parent = waitSlider
+
+local waitFillCorner = Instance.new("UICorner")
+waitFillCorner.CornerRadius = UDim.new(1, 0)
+waitFillCorner.Parent = waitFill
+
+local waitKnob = Instance.new("TextButton")
+waitKnob.Size = UDim2.new(0, 20, 0, 20)
+waitKnob.Position = UDim2.new(0.09, -10, 0.5, -10)
+waitKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+waitKnob.Text = ""
+waitKnob.ZIndex = 9
+waitKnob.Parent = waitSlider
+
+local waitKnobCorner = Instance.new("UICorner")
+waitKnobCorner.CornerRadius = UDim.new(1, 0)
+waitKnobCorner.Parent = waitKnob
+
+-- Step slider functionality
+local draggingStepSlider = false
+stepKnob.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		draggingSlider = true
+		draggingStepSlider = true
 	end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		draggingSlider = false
+		draggingStepSlider = false
+		draggingWaitSlider = false
+	end
+end)
+
+-- Wait slider functionality
+local draggingWaitSlider = false
+waitKnob.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		draggingWaitSlider = true
 	end
 end)
 
 RunService.RenderStepped:Connect(function()
-	if draggingSlider then
+	if draggingStepSlider then
 		local mousePos = UserInputService:GetMouseLocation()
-		local sliderPos = speedSlider.AbsolutePosition
-		local sliderSize = speedSlider.AbsoluteSize
+		local sliderPos = stepSlider.AbsolutePosition
+		local sliderSize = stepSlider.AbsoluteSize
 		
 		local relativeX = math.clamp(mousePos.X - sliderPos.X, 0, sliderSize.X)
 		local percentage = relativeX / sliderSize.X
 		
-		teleportSpeed = math.floor(percentage * 100) + 1 -- 1 to 101
-		if teleportSpeed > 100 then teleportSpeed = 100 end
+		stepDistance = math.floor(percentage * 19) + 1 -- 1 to 20 studs
 		
-		speedKnob.Position = UDim2.new(percentage, -10, 0.5, -10)
-		speedFill.Size = UDim2.new(percentage, 0, 1, 0)
-		speedLabel.Text = "⚡ Speed: " .. teleportSpeed
+		stepKnob.Position = UDim2.new(percentage, -10, 0.5, -10)
+		stepFill.Size = UDim2.new(percentage, 0, 1, 0)
+		stepLabel.Text = "📏 Step Distance: " .. stepDistance .. " studs"
+	end
+	
+	if draggingWaitSlider then
+		local mousePos = UserInputService:GetMouseLocation()
+		local sliderPos = waitSlider.AbsolutePosition
+		local sliderSize = waitSlider.AbsoluteSize
+		
+		local relativeX = math.clamp(mousePos.X - sliderPos.X, 0, sliderSize.X)
+		local percentage = relativeX / sliderSize.X
+		
+		-- 0.01 to 1.0 seconds
+		waitTime = 0.01 + (percentage * 0.99)
+		
+		waitKnob.Position = UDim2.new(percentage, -10, 0.5, -10)
+		waitFill.Size = UDim2.new(percentage, 0, 1, 0)
+		waitLabel.Text = string.format("⏱️ Wait Time: %.2fs", waitTime)
 	end
 end)
 
@@ -359,7 +442,7 @@ end)
 local setButton = Instance.new("TextButton")
 setButton.Name = "SetButton"
 setButton.Size = UDim2.new(1, -20, 0, 45)
-setButton.Position = UDim2.new(0, 10, 0, 310)
+setButton.Position = UDim2.new(0, 10, 0, 380)
 setButton.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
 setButton.Text = "📍 Set Position"
 setButton.TextColor3 = Color3.new(1, 1, 1)
@@ -377,7 +460,7 @@ setCorner.Parent = setButton
 local teleportButton = Instance.new("TextButton")
 teleportButton.Name = "TeleportButton"
 teleportButton.Size = UDim2.new(1, -20, 0, 45)
-teleportButton.Position = UDim2.new(0, 10, 0, 365)
+teleportButton.Position = UDim2.new(0, 10, 0, 435)
 teleportButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
 teleportButton.Text = "⚡ Teleport"
 teleportButton.TextColor3 = Color3.new(1, 1, 1)
@@ -433,56 +516,50 @@ setButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Teleport functionality with bypass method
+-- Teleport functionality with instant steps
 teleportButton.MouseButton1Click:Connect(function()
 	if savedPosition then
 		local character = player.Character
 		if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") then
 			local hrp = character.HumanoidRootPart
-			local humanoid = character.Humanoid
-			
-			-- Calculate steps based on speed (1=slowest, 100=fastest)
-			-- More steps = slower and smoother
-			local maxSteps = 200 -- Maximum steps for speed 1
-			local minSteps = 2 -- Minimum steps for speed 100
-			
-			-- Linear interpolation: speed 1 = 200 steps, speed 100 = 2 steps
-			local steps = math.floor(maxSteps - ((teleportSpeed - 1) / 99) * (maxSteps - minSteps))
-			
-			-- Delay calculation: speed 1 = 0.05s, speed 100 = 0.001s
-			local maxDelay = 0.05
-			local minDelay = 0.001
-			local delay = maxDelay - ((teleportSpeed - 1) / 99) * (maxDelay - minDelay)
 			
 			local startPos = hrp.Position
 			local endPos = savedPosition
+			local direction = (endPos - startPos).Unit
+			local totalDistance = (endPos - startPos).Magnitude
 			
-			-- Anti-detection methods
-			hrp.Anchored = true -- Prevent physics interference
-			
-			-- Move in steps with RunService for smoother movement
-			local connection
-			local currentStep = 0
-			
-			connection = RunService.Heartbeat:Connect(function()
-				currentStep = currentStep + 1
-				if currentStep >= steps then
-					connection:Disconnect()
-					hrp.CFrame = CFrame.new(endPos)
-					hrp.Anchored = false
-					hrp.Velocity = Vector3.new(0, 0, 0)
-					hrp.RotVelocity = Vector3.new(0, 0, 0)
-				else
-					local alpha = currentStep / steps
-					local newPos = startPos:Lerp(endPos, alpha)
-					hrp.CFrame = CFrame.new(newPos)
-				end
-			end)
+			-- Calculate how many steps needed
+			local numSteps = math.ceil(totalDistance / stepDistance)
 			
 			-- Visual feedback
 			teleportButton.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
-			task.wait(0.1)
-			teleportButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
+			
+			-- Teleport in steps
+			task.spawn(function()
+				for i = 1, numSteps do
+					if not character or not character:FindFirstChild("HumanoidRootPart") then
+						break
+					end
+					
+					local currentPos = hrp.Position
+					local remainingDistance = (endPos - currentPos).Magnitude
+					
+					-- On last step, teleport directly to target
+					if remainingDistance <= stepDistance then
+						hrp.CFrame = CFrame.new(endPos)
+						break
+					else
+						-- Instant teleport by stepDistance
+						local newPos = currentPos + direction * stepDistance
+						hrp.CFrame = CFrame.new(newPos)
+					end
+					
+					task.wait(waitTime)
+				end
+				
+				-- Reset button color
+				teleportButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
+			end)
 		end
 	else
 		-- No position saved feedback
