@@ -15,7 +15,7 @@ screenGui.Parent = playerGui
 
 -- Variables
 local savedPosition = nil
-local teleportSpeed = 5 -- Default speed (1-10, higher = faster)
+local teleportSpeed = 50 -- Default speed (1-100, higher = faster)
 
 -- Function to make frames draggable (only from header)
 local function makeDraggableFromHeader(frame, dragArea)
