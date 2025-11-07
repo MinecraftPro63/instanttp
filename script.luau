@@ -16,6 +16,8 @@ screenGui.Parent = playerGui
 -- Variables
 local savedPosition = nil
 local teleportSpeed = 50 -- Default speed (1-100, higher = faster)
+local stepDistance = 2 -- Distance per step in studs (1-10)
+local waitTime = 0.1 -- Wait time between steps (0.01-1.0)
 
 -- Function to make frames draggable (only from header)
 local function makeDraggableFromHeader(frame, dragArea)
