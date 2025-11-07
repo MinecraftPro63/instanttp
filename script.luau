@@ -516,49 +516,88 @@ setButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Teleport functionality with instant steps
+-- Teleport functionality with anti-cheat bypass
+local isTeleporting = false
 teleportButton.MouseButton1Click:Connect(function()
+	if isTeleporting then
+		return -- Prevent multiple teleports at once
+	end
+	
 	if savedPosition then
 		local character = player.Character
 		if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") then
 			local hrp = character.HumanoidRootPart
+			local humanoid = character.Humanoid
+			
+			isTeleporting = true
 			
 			local startPos = hrp.Position
 			local endPos = savedPosition
-			local direction = (endPos - startPos).Unit
 			local totalDistance = (endPos - startPos).Magnitude
-			
-			-- Calculate how many steps needed
-			local numSteps = math.ceil(totalDistance / stepDistance)
 			
 			-- Visual feedback
 			teleportButton.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
+			teleportButton.Text = "⚡ Teleporting..."
 			
-			-- Teleport in steps
+			-- Anti-cheat bypass: Use RunService.Heartbeat for smoother movement
 			task.spawn(function()
-				for i = 1, numSteps do
+				local distanceTraveled = 0
+				local connection
+				
+				-- Disable character collision temporarily
+				for _, part in pairs(character:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+				
+				connection = RunService.Heartbeat:Connect(function(deltaTime)
 					if not character or not character:FindFirstChild("HumanoidRootPart") then
-						break
+						connection:Disconnect()
+						isTeleporting = false
+						return
 					end
 					
 					local currentPos = hrp.Position
 					local remainingDistance = (endPos - currentPos).Magnitude
 					
-					-- On last step, teleport directly to target
-					if remainingDistance <= stepDistance then
+					-- If we're close enough, snap to final position
+					if remainingDistance <= 0.5 then
 						hrp.CFrame = CFrame.new(endPos)
-						break
-					else
-						-- Instant teleport by stepDistance
-						local newPos = currentPos + direction * stepDistance
-						hrp.CFrame = CFrame.new(newPos)
+						connection:Disconnect()
+						
+						-- Re-enable collision
+						task.wait(0.1)
+						for _, part in pairs(character:GetDescendants()) do
+							if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+								part.CanCollide = true
+							end
+						end
+						
+						-- Reset visuals
+						teleportButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
+						teleportButton.Text = "⚡ Teleport"
+						isTeleporting = false
+						return
 					end
 					
+					-- Calculate step for this frame
+					local direction = (endPos - currentPos).Unit
+					local stepThisFrame = math.min(stepDistance, remainingDistance)
+					
+					-- Move the character
+					local newPos = currentPos + direction * stepThisFrame
+					hrp.CFrame = CFrame.new(newPos)
+					
+					-- Reset velocity to prevent rubber-banding
+					hrp.Velocity = Vector3.new(0, 0, 0)
+					hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+					
+					distanceTraveled = distanceTraveled + stepThisFrame
+					
+					-- Wait based on user setting
 					task.wait(waitTime)
-				end
-				
-				-- Reset button color
-				teleportButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
+				end)
 			end)
 		end
 	else
