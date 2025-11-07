@@ -516,7 +516,7 @@ setButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Teleport functionality with anti-cheat bypass
+-- Teleport functionality with stronger anti-cheat bypass
 local isTeleporting = false
 teleportButton.MouseButton1Click:Connect(function()
 	if isTeleporting then
@@ -539,65 +539,78 @@ teleportButton.MouseButton1Click:Connect(function()
 			teleportButton.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
 			teleportButton.Text = "⚡ Teleporting..."
 			
-			-- Anti-cheat bypass: Use RunService.Heartbeat for smoother movement
+			-- Advanced anti-cheat bypass
 			task.spawn(function()
-				local distanceTraveled = 0
-				local connection
+				-- Store original properties
+				local originalWalkSpeed = humanoid.WalkSpeed
+				local originalJumpPower = humanoid.JumpPower
 				
-				-- Disable character collision temporarily
-				for _, part in pairs(character:GetDescendants()) do
-					if part:IsA("BasePart") then
-						part.CanCollide = false
+				-- Modify humanoid properties to simulate "walking"
+				humanoid.WalkSpeed = 0
+				humanoid.JumpPower = 0
+				humanoid.AutoRotate = false
+				
+				-- Disable all body movers
+				for _, v in pairs(hrp:GetChildren()) do
+					if v:IsA("BodyMover") then
+						v:Destroy()
 					end
 				end
 				
-				connection = RunService.Heartbeat:Connect(function(deltaTime)
-					if not character or not character:FindFirstChild("HumanoidRootPart") then
-						connection:Disconnect()
-						isTeleporting = false
-						return
+				local stepsTaken = 0
+				local maxSteps = math.ceil(totalDistance / stepDistance)
+				
+				for i = 1, maxSteps do
+					if not character or not character:FindFirstChild("HumanoidRootPart") or not character:FindFirstChild("Humanoid") or humanoid.Health <= 0 then
+						break
 					end
 					
 					local currentPos = hrp.Position
+					local direction = (endPos - currentPos).Unit
 					local remainingDistance = (endPos - currentPos).Magnitude
 					
 					-- If we're close enough, snap to final position
-					if remainingDistance <= 0.5 then
-						hrp.CFrame = CFrame.new(endPos)
-						connection:Disconnect()
-						
-						-- Re-enable collision
-						task.wait(0.1)
-						for _, part in pairs(character:GetDescendants()) do
-							if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-								part.CanCollide = true
-							end
-						end
-						
-						-- Reset visuals
-						teleportButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
-						teleportButton.Text = "⚡ Teleport"
-						isTeleporting = false
-						return
+					if remainingDistance <= stepDistance then
+						hrp.CFrame = CFrame.new(endPos, endPos + direction)
+						break
 					end
 					
-					-- Calculate step for this frame
-					local direction = (endPos - currentPos).Unit
-					local stepThisFrame = math.min(stepDistance, remainingDistance)
+					-- Calculate new position
+					local newPos = currentPos + direction * stepDistance
 					
-					-- Move the character
-					local newPos = currentPos + direction * stepThisFrame
-					hrp.CFrame = CFrame.new(newPos)
+					-- Set CFrame with orientation preserved
+					hrp.CFrame = CFrame.new(newPos, newPos + direction)
 					
-					-- Reset velocity to prevent rubber-banding
+					-- Aggressively reset all velocity
 					hrp.Velocity = Vector3.new(0, 0, 0)
-					hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+					hrp.RotVelocity = Vector3.new(0, 0, 0)
+					if hrp.AssemblyLinearVelocity then
+						hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+					end
+					if hrp.AssemblyAngularVelocity then
+						hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+					end
 					
-					distanceTraveled = distanceTraveled + stepThisFrame
+					stepsTaken = stepsTaken + 1
 					
-					-- Wait based on user setting
+					-- Wait between steps
 					task.wait(waitTime)
-				end)
+				end
+				
+				-- Restore original properties
+				task.wait(0.1)
+				humanoid.WalkSpeed = originalWalkSpeed
+				humanoid.JumpPower = originalJumpPower
+				humanoid.AutoRotate = true
+				
+				-- Reset velocity one final time
+				hrp.Velocity = Vector3.new(0, 0, 0)
+				hrp.RotVelocity = Vector3.new(0, 0, 0)
+				
+				-- Reset visuals
+				teleportButton.BackgroundColor3 = Color3.fromRGB(150, 80, 255)
+				teleportButton.Text = "⚡ Teleport"
+				isTeleporting = false
 			end)
 		end
 	else
