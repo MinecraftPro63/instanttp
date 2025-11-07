@@ -338,30 +338,37 @@ setButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Teleport functionality with anti-kick bypass
+-- Teleport functionality with fast smooth movement
 teleportButton.MouseButton1Click:Connect(function()
 	if savedPosition then
 		local character = player.Character
 		if character and character:FindFirstChild("HumanoidRootPart") then
 			local hrp = character.HumanoidRootPart
 			
-			-- Method 1: Simple CFrame (fastest but detectable)
-			-- hrp.CFrame = CFrame.new(savedPosition)
+			-- Fast smooth teleport (small rapid steps)
+			local startPos = hrp.Position
+			local endPos = savedPosition
+			local steps = 10 -- Number of steps (lower = faster, higher = smoother)
+			local delay = 0.01 -- Delay between steps (lower = faster)
 			
-			-- Method 2: Disable collision temporarily (better)
+			-- Disable collision for smooth movement
 			local originalCanCollide = hrp.CanCollide
 			hrp.CanCollide = false
-			hrp.CFrame = CFrame.new(savedPosition)
-			task.wait(0.1)
+			
+			-- Move in steps
+			for i = 1, steps do
+				local alpha = i / steps
+				local newPos = startPos:Lerp(endPos, alpha)
+				hrp.CFrame = CFrame.new(newPos)
+				task.wait(delay)
+			end
+			
+			-- Re-enable collision
 			hrp.CanCollide = originalCanCollide
 			
-			-- Method 3: Tween (smoothest, least detectable) - uncomment to use
-			--[[
-			local TweenService = game:GetService("TweenService")
-			local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear)
-			local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(savedPosition)})
-			tween:Play()
-			]]--
+			-- Reset velocity to prevent sliding
+			hrp.Velocity = Vector3.new(0, 0, 0)
+			hrp.RotVelocity = Vector3.new(0, 0, 0)
 			
 			-- Visual feedback
 			teleportButton.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
@@ -379,7 +386,5 @@ end)
 
 -- Update position every frame
 game:GetService("RunService").RenderStepped:Connect(updateCurrentPosition)
-
-print("Teleport GUI Loaded Successfully!")Connect(updateCurrentPosition)
 
 print("Teleport GUI Loaded Successfully!")
