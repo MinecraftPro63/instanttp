@@ -338,12 +338,30 @@ setButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Teleport functionality
+-- Teleport functionality with anti-kick bypass
 teleportButton.MouseButton1Click:Connect(function()
 	if savedPosition then
 		local character = player.Character
 		if character and character:FindFirstChild("HumanoidRootPart") then
-			character.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
+			local hrp = character.HumanoidRootPart
+			
+			-- Method 1: Simple CFrame (fastest but detectable)
+			-- hrp.CFrame = CFrame.new(savedPosition)
+			
+			-- Method 2: Disable collision temporarily (better)
+			local originalCanCollide = hrp.CanCollide
+			hrp.CanCollide = false
+			hrp.CFrame = CFrame.new(savedPosition)
+			task.wait(0.1)
+			hrp.CanCollide = originalCanCollide
+			
+			-- Method 3: Tween (smoothest, least detectable) - uncomment to use
+			--[[
+			local TweenService = game:GetService("TweenService")
+			local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear)
+			local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(savedPosition)})
+			tween:Play()
+			]]--
 			
 			-- Visual feedback
 			teleportButton.BackgroundColor3 = Color3.fromRGB(200, 120, 255)
