@@ -278,7 +278,7 @@ local speedLabel = Instance.new("TextLabel")
 speedLabel.Size = UDim2.new(1, -10, 0, 20)
 speedLabel.Position = UDim2.new(0, 5, 0, 5)
 speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "⚡ Speed: 5"
+speedLabel.Text = "⚡ Speed: 50"
 speedLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
 speedLabel.Font = Enum.Font.GothamBold
 speedLabel.TextSize = 14
@@ -299,7 +299,7 @@ sliderCorner.CornerRadius = UDim.new(1, 0)
 sliderCorner.Parent = speedSlider
 
 local speedFill = Instance.new("Frame")
-speedFill.Size = UDim2.new(0.5, 0, 1, 0)
+speedFill.Size = UDim2.new(0.49, 0, 1, 0)
 speedFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
 speedFill.BorderSizePixel = 0
 speedFill.ZIndex = 8
@@ -311,7 +311,7 @@ fillCorner.Parent = speedFill
 
 local speedKnob = Instance.new("TextButton")
 speedKnob.Size = UDim2.new(0, 20, 0, 20)
-speedKnob.Position = UDim2.new(0.5, -10, 0.5, -10)
+speedKnob.Position = UDim2.new(0.49, -10, 0.5, -10)
 speedKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 speedKnob.Text = ""
 speedKnob.ZIndex = 9
@@ -344,8 +344,8 @@ RunService.RenderStepped:Connect(function()
 		local relativeX = math.clamp(mousePos.X - sliderPos.X, 0, sliderSize.X)
 		local percentage = relativeX / sliderSize.X
 		
-		teleportSpeed = math.floor(percentage * 10) + 1 -- 1 to 11
-		if teleportSpeed > 10 then teleportSpeed = 10 end
+		teleportSpeed = math.floor(percentage * 100) + 1 -- 1 to 101
+		if teleportSpeed > 100 then teleportSpeed = 100 end
 		
 		speedKnob.Position = UDim2.new(percentage, -10, 0.5, -10)
 		speedFill.Size = UDim2.new(percentage, 0, 1, 0)
@@ -439,10 +439,18 @@ teleportButton.MouseButton1Click:Connect(function()
 			local hrp = character.HumanoidRootPart
 			local humanoid = character.Humanoid
 			
-			-- Calculate steps based on speed (1=slowest, 10=fastest)
-			local maxSteps = 20
-			local steps = math.max(2, maxSteps - (teleportSpeed * 2))
-			local delay = math.max(0.001, 0.03 - (teleportSpeed * 0.002))
+			-- Calculate steps based on speed (1=slowest, 100=fastest)
+			-- More steps = slower and smoother
+			local maxSteps = 200 -- Maximum steps for speed 1
+			local minSteps = 2 -- Minimum steps for speed 100
+			
+			-- Linear interpolation: speed 1 = 200 steps, speed 100 = 2 steps
+			local steps = math.floor(maxSteps - ((teleportSpeed - 1) / 99) * (maxSteps - minSteps))
+			
+			-- Delay calculation: speed 1 = 0.05s, speed 100 = 0.001s
+			local maxDelay = 0.05
+			local minDelay = 0.001
+			local delay = maxDelay - ((teleportSpeed - 1) / 99) * (maxDelay - minDelay)
 			
 			local startPos = hrp.Position
 			local endPos = savedPosition
