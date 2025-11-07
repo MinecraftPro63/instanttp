@@ -380,4 +380,6 @@ end)
 -- Update position every frame
 game:GetService("RunService").RenderStepped:Connect(updateCurrentPosition)
 
+print("Teleport GUI Loaded Successfully!")Connect(updateCurrentPosition)
+
 print("Teleport GUI Loaded Successfully!")
