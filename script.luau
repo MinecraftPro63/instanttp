@@ -497,8 +497,7 @@ end)
 
 -- Close button functionality
 closeButton.MouseButton1Click:Connect(function()
-	mainFrame.Visible = false
-	toggleButton.Text = "Show UI"
+	screenGui:Destroy()
 end)
 
 -- Set position functionality
